@@ -1,0 +1,8 @@
+booktype
+aiohttp_jinja2
+jinja2
+aiohttp
+sqlalchemy
+aiomysql
+redis
+python-dotenv
