@@ -3,7 +3,7 @@ import secrets
 
 from aiohttp import web
 
-from .auth_server import store_state
+from auth_server import store_state
 from common.auth import _extract_token_from_request, _make_hmac, _find_token_hash
 
 
