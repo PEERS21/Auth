@@ -1,19 +1,11 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    ca-certificates \
-    tini \
- && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-WORKDIR /srv
+COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r common/requirements.txt
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+EXPOSE 8000
 
-#RUN pip install --no-cache-dir -r /srv/requirements.txt
-
-ARG APP_PORT=8000
-EXPOSE ${APP_PORT}
-
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
+CMD ["python", "-m", "auth_server"]
