@@ -4,5 +4,5 @@ jinja2
 aiohttp
 sqlalchemy
 aiomysql
-redis
+redis>=6.2.0
 python-dotenv

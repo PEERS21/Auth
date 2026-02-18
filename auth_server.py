@@ -13,7 +13,7 @@ from redis_client import init_redis, close_redis
 from state_manager import store_state, pop_state
 
 from dotenv import dotenv_values
-config = dotenv_values(".env")
+config = dotenv_values("/run/secrets/peers_auth")
 
 async def init_db():
     async with ENGINE.begin() as conn:

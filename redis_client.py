@@ -2,7 +2,7 @@ import redis.asyncio as redis
 
 async def init_redis(app):
     app['redis'] = redis.Redis(
-        host='localhost',
+        host='redis',
         port=6379,
         db=0,
         decode_responses=True,
