@@ -7,4 +7,6 @@ async def init_redis(app):
 
 async def close_redis(app):
     if 'redis' in app:
-        await app['redis'].aclose()
+        await app['redis'].close()
+    if 'pool' in app:
+        await app['pool'].close()
