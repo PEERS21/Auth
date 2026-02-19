@@ -127,7 +127,7 @@ async def send_code(request: web.Request):
 
     try:
         if await is_blacklisted(login):
-            audio_url = "/auth/static/blocked.mp3"
+            audio_url = "/static/blocked.mp3"
             return web.json_response(
                 {
                     'ok': False,
@@ -294,7 +294,7 @@ async def on_cleanup(app):
 
 def make_app():
     app = web.Application()
-    app.router.add_static('/auth/static/', path='static', name='static')
+    app.router.add_static('/static/', path='static', name='static')
     app.add_routes(routes)
     app.router.add_get('/login', views.index)
     app.middlewares.append(security_headers_middleware)
