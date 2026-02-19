@@ -7,7 +7,7 @@ import jinja2
 from aiohttp import web
 from sqlalchemy import delete, select
 import views
-from common.auth import make_hmac
+from auth import make_hmac
 from common.db_init import AsyncSessionLocal, ENGINE
 from common.db_models import IssuedToken, Base, Blacklist
 from redis_client import init_redis, close_redis
@@ -147,8 +147,8 @@ async def send_code(request: web.Request):
         TODO
         GMAIL SEND
         """
-        print(f" ✅ Письмо отправлено: {result}")
-    except RusenderError as e:
+        print(f" ✅ Письмо отправлено: TODO")
+    except RuntimeError as e:
         print(f" ❌ Ошибка отправки: {e}")
         return web.json_response(
             {'error': 'Не удалось отправить код. Попробуйте позже.'},
@@ -197,7 +197,7 @@ async def verif_code(request: web.Request):
     token_hash = make_hmac(raw_token)
     await store_issued_token(login, token_hash)
     resp = web.json_response({'ok': True, 'next': next_url})
-    max_age = int(getenv("SERVER_TOKEN_DAYS")) * 24 * 3600
+    max_age = int(getenv("SERVER_TOKEN_DAYS", 0)) * 24 * 3600
     resp.set_cookie(getenv("COOKIE_NAME"),
                     raw_token,
                     max_age=max_age,
@@ -218,7 +218,7 @@ async def verify(request: web.Request):
     if not token:
         return web.json_response({'error': 'no_token'}, status=401)
     token_hash = make_hmac(token)
-    info = await _find_token_hash(token_hash)
+    info = await find_token_hash(token_hash)
     if not info:
         return web.json_response({'error': 'invalid_or_expired_token'},
                                  status=401)"""
