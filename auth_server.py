@@ -12,9 +12,6 @@ from common.db_models import IssuedToken, Base, Blacklist
 from redis_client import init_redis, close_redis
 from state_manager import store_state, pop_state
 
-from dotenv import dotenv_values
-config = dotenv_values("/run/secrets/peers_auth")
-
 async def init_db():
     async with ENGINE.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -26,7 +23,7 @@ async def close_engine(app):
 
 async def store_issued_token(user_login: str,
                              token_hash: str,
-                             ttl_days: int = int(config.get("SERVER_TOKEN_DAYS", ""))):
+                             ttl_days: int = int(getenv("SERVER_TOKEN_DAYS"))):
     now = int(time.time())
     exp = now + ttl_days * 24 * 3600
     async with AsyncSessionLocal() as session:
@@ -80,7 +77,7 @@ def _extract_bearer(request: web.Request) -> str:
 
 async def authorize_request(request: web.Request):
     token = _extract_bearer(request)
-    if token != config.get("AUTH_STATIC_TOKEN", ""):
+    if token != getenv("AUTH_STATIC_TOKEN"):
         _unauthorized("Invalid token")
 
 
@@ -199,8 +196,8 @@ async def verif_code(request: web.Request):
     token_hash = make_hmac(raw_token)
     await store_issued_token(login, token_hash)
     resp = web.json_response({'ok': True, 'next': next_url})
-    max_age = int(config.get("SERVER_TOKEN_DAYS", "")) * 24 * 3600
-    resp.set_cookie(config.get("COOKIE_NAME", ""),
+    max_age = int(getenv("SERVER_TOKEN_DAYS")) * 24 * 3600
+    resp.set_cookie(getenv("COOKIE_NAME"),
                     raw_token,
                     max_age=max_age,
                     httponly=True,
@@ -312,4 +309,4 @@ if __name__ == "__main__":
     main_frame = make_app()
     web.run_app(main_frame,
                 host="0.0.0.0",
-                port=config.get("PORT", "8000"))
+                port=getenv("PORT"))
