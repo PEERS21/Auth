@@ -294,7 +294,7 @@ async def on_cleanup(app):
 
 def make_app():
     app = web.Application()
-    app.router.add_static('/auth/static/', path='auth/static', name='static')
+    app.router.add_static('/auth/static/', path='static', name='static')
     app.add_routes(routes)
     app.router.add_get('/login', views.index)
     app.middlewares.append(security_headers_middleware)
