@@ -310,4 +310,4 @@ if __name__ == "__main__":
     main_frame = make_app()
     web.run_app(main_frame,
                 host="0.0.0.0",
-                port=getenv("PORT"))
+                port=int(getenv("PORT", 0)))
