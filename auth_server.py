@@ -12,6 +12,7 @@ from common.db_init import AsyncSessionLocal, ENGINE
 from common.db_models import IssuedToken, Base, Blacklist
 from redis_client import init_redis, close_redis
 from state_manager import store_state, pop_state
+import aiohttp_cors
 
 async def init_db():
     async with ENGINE.begin() as conn:
@@ -99,7 +100,7 @@ async def security_headers_middleware(request, handler):
             "script-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https://doc-08-2c-docs.googleusercontent.com; "
             "media-src 'self' blob: data:; "
-            "connect-src 'self'"))
+            "connect-src 'self' https://rentaldisk.tamelaos.fun"))
     return resp
 
 @routes.post('/send_code')
@@ -204,6 +205,7 @@ async def verif_code(request: web.Request):
                     httponly=True,
                     secure=True,
                     samesite='Lax',
+                    domain='.tamelaos.fun',
                     path='/')
     return resp
 
@@ -297,8 +299,22 @@ def make_app():
     app.router.add_static('/static/', path='static', name='static')
     app.add_routes(routes)
     app.router.add_get('/login', views.index)
-    app.middlewares.append(security_headers_middleware)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("templates"))
+    cors = aiohttp_cors.setup(app, defaults={
+        "https://app.tamelaos.fun": aiohttp_cors.ResourceOptions(
+            allow_credentials=True,
+            expose_headers="*",
+            allow_headers="*",
+            allow_methods=["GET", "POST", "OPTIONS"]
+        )
+    })
+
+    # 3. Применяем CORS ко всем маршрутам
+    for route in list(app.router.routes()):
+        cors.add(route)
+
+    # Ваши остальные настройки
+    app.middlewares.append(security_headers_middleware)
 
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)

@@ -6,3 +6,4 @@ sqlalchemy
 aiomysql
 redis>=6.2.0
 python-dotenv
+aiohttp-cors
