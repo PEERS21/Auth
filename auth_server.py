@@ -84,6 +84,7 @@ async def authorize_request(request: web.Request):
 
 
 routes = web.RouteTableDef()
+ORIGIN_RE = re.compile(r"^https://([a-z0-9-]+\.)?tamelaos\.fun$")
 
 
 @web.middleware
@@ -101,6 +102,26 @@ async def security_headers_middleware(request, handler):
             "img-src 'self' data: https://doc-08-2c-docs.googleusercontent.com; "
             "media-src 'self' blob: data:; "
             "connect-src 'self' https://rentaldisk.tamelaos.fun"))
+
+    origin = request.headers.get("Origin")
+    # preflight
+    if request.method == "OPTIONS":
+        resp = web.Response(status=204)
+        if origin and ORIGIN_RE.match(origin):
+            resp.headers["Access-Control-Allow-Origin"] = origin
+            resp.headers["Access-Control-Allow-Credentials"] = "true"
+            resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
+            resp.headers["Access-Control-Allow-Headers"] = request.headers.get(
+                "Access-Control-Request-Headers", "Authorization,Content-Type"
+            )
+        return resp
+
+    if origin and ORIGIN_RE.match(origin):
+        # echo origin — важно для credentials (cookies)
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        # опционально
+        resp.headers.setdefault("Access-Control-Expose-Headers", "Content-Length")
     return resp
 
 @routes.post('/send_code')
@@ -300,20 +321,7 @@ def make_app():
     app.add_routes(routes)
     app.router.add_get('/login', views.index)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader("templates"))
-    cors = aiohttp_cors.setup(app, defaults={
-        "https://app.tamelaos.fun": aiohttp_cors.ResourceOptions(
-            allow_credentials=True,
-            expose_headers="*",
-            allow_headers="*",
-            allow_methods=["GET", "POST", "OPTIONS"]
-        )
-    })
 
-    # 3. Применяем CORS ко всем маршрутам
-    for route in list(app.router.routes()):
-        cors.add(route)
-
-    # Ваши остальные настройки
     app.middlewares.append(security_headers_middleware)
 
     app.on_startup.append(on_startup)
