@@ -234,22 +234,22 @@ async def verif_code(request: web.Request):
 
 @routes.get('/verify')
 async def verify(request: web.Request):
-    """auth = request.headers.get('Authorization')
+    auth = request.headers.get('Authorization')
     if auth and auth.startswith('Bearer '):
         token = auth.split(' ', 1)[1]
     else:
-        token = request.cookies.get(COOKIE_NAME)
+        token = request.cookies.get(getenv("COOKIE_NAME"))
     if not token:
-        return web.json_response({'error': 'no_token'}, status=401)
+        raise web.HTTPFound(location=getenv("LOGIN_URL"))
     token_hash = make_hmac(token)
     info = await find_token_hash(token_hash)
     if not info:
-        return web.json_response({'error': 'invalid_or_expired_token'},
-                                 status=401)"""
+        raise web.HTTPFound(location=getenv("LOGIN_URL"))
+    """
     return web.json_response({
         'ok': True,
         'user': "tamelaos_test"
-    })
+    })"""
 
 
 @routes.post('/revoke')
